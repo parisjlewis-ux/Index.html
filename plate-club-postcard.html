@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Plate Club Postcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F3EBD8;
+    --paper-edge: #E9DCBE;
+    --ink: #2E2440;
+    --brick: #B5502F;
+    --gold: #C9A961;
+    --sage: #6E7E5E;
+    --stamp-1: #FCD116;
+    --stamp-2: #003893;
+    --stamp-3: #CE1126;
+    --shadow: rgba(46, 36, 64, 0.20);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--paper-edge);
+    background-image:
+      radial-gradient(circle at 15% 15%, rgba(110,126,94,0.10) 0, transparent 42%),
+      radial-gradient(circle at 85% 85%, rgba(181,80,47,0.09) 0, transparent 42%);
+    font-family: 'Space Mono', monospace;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .stage { width: 100%; max-width: 420px; perspective: 1600px; }
+
+  .scene-label {
+    text-align: center;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    opacity: 0.55;
+    margin-bottom: 14px;
+  }
+
+  .card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4.3;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(.4,.2,.2,1);
+    cursor: pointer;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow: 0 18px 40px var(--shadow), 0 2px 6px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* deckled paper edge illusion */
+  .face::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border: 1px solid rgba(46,36,64,0.14);
+    border-radius: 3px;
+  }
+  .face-back { transform: rotateY(180deg); }
+
+  /* ---------- FRONT (photo side) ---------- */
+  .front-photo {
+    flex: 1;
+    position: relative;
+    background: repeating-linear-gradient(135deg, rgba(46,36,64,0.05) 0 2px, transparent 2px 16px), var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .front-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .upload-zone {
+    text-align: center;
+    padding: 20px;
+    color: var(--ink);
+    opacity: 0.55;
+  }
+  .upload-zone .icon {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 30px;
+    margin-bottom: 6px;
+  }
+  .upload-zone p { font-size: 11px; line-height: 1.5; margin: 0; }
+  .upload-btn {
+    margin-top: 12px;
+    display: inline-block;
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(46,36,64,0.35);
+    padding: 8px 14px;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  #photoInput { display: none; }
+
+  .remove-photo {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(46,36,64,0.65);
+    color: var(--paper);
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 5px 9px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .wordmark-badge {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(243,235,216,0.92);
+    padding: 5px 10px 4px;
+    border-radius: 2px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+
+  .front-footer {
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 10.5px;
+    opacity: 0.6;
+    border-top: 1px dashed rgba(46,36,64,0.2);
+  }
+  .front-footer b { color: var(--brick); opacity: 1; }
+
+  /* ---------- BACK (message + address side) ---------- */
+  .face-back { padding: 0; }
+  .back-banner {
+    text-align: center;
+    padding: 10px 0 8px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    border-bottom: 1px dashed rgba(46,36,64,0.22);
+  }
+  .back-split {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+  }
+  .back-left {
+    flex: 1.25;
+    padding: 12px 12px 12px 16px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px dashed rgba(46,36,64,0.22);
+  }
+  .back-hint { font-size: 9.5px; opacity: 0.5; margin-bottom: 8px; }
+  textarea {
+    flex: 1;
+    width: 100%;
+    resize: none;
+    border: none;
+    background: repeating-linear-gradient(
+      to bottom, transparent 0, transparent 22px, rgba(46,36,64,0.22) 23px
+    );
+    background-position-y: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12.5px;
+    line-height: 23px;
+    color: var(--ink);
+    outline: none;
+    padding: 0;
+  }
+  textarea::placeholder { color: rgba(46,36,64,0.35); }
+
+  .name-row { margin-top: 6px; }
+  .name-row input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid rgba(46,36,64,0.3);
+    background: transparent;
+    font-family: 'Space Mono', monospace;
+    font-size: 11.5px;
+    padding: 4px 2px;
+    color: var(--ink);
+    outline: none;
+  }
+  .name-row label { font-size: 9px; opacity: 0.5; display:block; margin-bottom:2px; }
+
+  .back-right {
+    flex: 1;
+    padding: 12px 14px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .stamp {
+    width: 58px;
+    height: 70px;
+    position: relative;
+    background: linear-gradient(to bottom, var(--stamp-1) 0 50%, var(--stamp-2) 50% 75%, var(--stamp-3) 75% 100%);
+    border-radius: 2px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 4px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+    -webkit-mask-image: radial-gradient(circle 3.2px at 0 0, transparent 98%, black 100%),
+      radial-gradient(circle 3.2px at 100% 0, transparent 98%, black 100%);
+  }
+  .stamp-perf {
+    position: absolute;
+    inset: 0;
+    border-radius: 2px;
+    box-shadow:
+      0 0 0 3px var(--paper),
+      0 0 0 4px rgba(46,36,64,0.15);
+    -webkit-mask:
+      radial-gradient(circle 2.6px, black 99%, transparent 100%) 0 0/9px 9px,
+      linear-gradient(black,black);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+  }
+  .stamp span {
+    font-size: 6.5px;
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.35);
+    letter-spacing: 0.06em;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+  }
+
+  .postmark {
+    width: 66px;
+    height: 66px;
+    border: 1.3px solid rgba(46,36,64,0.4);
+    border-radius: 50%;
+    margin-top: 4px;
+    margin-right: -8px;
+    transform: rotate(-10deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.55;
+  }
+  .postmark span {
+    font-size: 7px;
+    text-align: center;
+    line-height: 1.3;
+    letter-spacing: 0.03em;
+  }
+
+  .addr-block {
+    margin-top: auto;
+    text-align: right;
+    font-size: 10.5px;
+    line-height: 1.75;
+  }
+  .addr-block .to-label { font-size: 8.5px; opacity: 0.45; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .addr-block .club { font-family: 'Fraunces', serif; font-style: italic; font-weight: 600; font-size: 13px; }
+
+  .send-row {
+    padding: 10px 14px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed rgba(46,36,64,0.22);
+  }
+  .flip-hint { font-size: 9.5px; opacity: 0.5; }
+  button.send {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    background: var(--brick);
+    color: var(--paper);
+    border: none;
+    padding: 10px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  button.send:active { transform: scale(0.96); }
+  button.send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .tap-flag { text-align: center; font-size: 10px; opacity: 0.45; margin-top: 12px; }
+
+  /* DELIVERED */
+  .delivered { display: none; text-align: center; padding: 60px 24px; }
+  .delivered.show { display: block; }
+  .delivered .stamp-mark {
+    width: 90px; height: 90px; margin: 0 auto 20px;
+    border: 2px solid var(--brick); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brick); font-family: 'Fraunces', serif; font-style: italic; font-size: 15px;
+    transform: rotate(-6deg);
+  }
+  .delivered h2 { font-family: 'Fraunces', serif; font-style: italic; font-weight: 600; font-size: 24px; margin: 0 0 8px; }
+  .delivered p { font-size: 12px; opacity: 0.65; line-height: 1.6; }
+
+  /* HOST */
+  .host-toggle {
+    position: fixed; bottom: 14px; right: 14px; font-size: 10px; opacity: 0.3;
+    background: none; border: none; font-family: 'Space Mono', monospace; cursor: pointer; color: var(--ink);
+  }
+  .host-toggle:hover { opacity: 0.7; }
+
+  .host-view { display: none; width: 100%; max-width: 620px; }
+  .host-view.show { display: block; }
+  .stage.hidden { display: none; }
+
+  .host-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  .host-header h1 { font-family: 'Fraunces', serif; font-style: italic; font-size: 22px; margin: 0; }
+  .host-header button {
+    font-family: 'Space Mono', monospace; font-size: 11px; background: none;
+    border: 1px solid rgba(46,36,64,0.3); padding: 6px 12px; border-radius: 3px; cursor: pointer; color: var(--ink);
+  }
+
+  .pin-gate { background: var(--paper); border-radius: 6px; padding: 32px 24px; text-align: center; box-shadow: 0 12px 30px var(--shadow); }
+  .pin-gate input {
+    font-family: 'Space Mono', monospace; font-size: 16px; letter-spacing: 0.3em; text-align: center;
+    border: 1px solid rgba(46,36,64,0.3); border-radius: 3px; padding: 10px; width: 140px; margin: 14px 0;
+    background: transparent; color: var(--ink);
+  }
+
+  .postcard-row {
+    background: var(--paper); border-radius: 5px; padding: 14px 16px; margin-bottom: 10px;
+    box-shadow: 0 4px 14px rgba(46,36,64,0.10); border-left: 3px solid var(--brick);
+    display: flex; gap: 12px;
+  }
+  .postcard-row img { width: 64px; height: 64px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+  .postcard-row .content { flex: 1; min-width: 0; }
+  .postcard-row .meta { display: flex; justify-content: space-between; font-size: 10px; opacity: 0.55; margin-bottom: 6px; }
+  .postcard-row .msg { font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+  .empty-state { text-align: center; padding: 40px 20px; opacity: 0.5; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="stage" id="guestStage">
+  <div class="scene-label" id="guestLabel">write your postcard below, then tap for a photo</div>
+
+  <div class="card" id="card">
+    <div class="face face-front">
+      <div class="back-banner">New Plate Club Post Card</div>
+      <div class="back-split">
+        <div class="back-left">
+          <div class="back-hint">How was your night?<br>(a few lines about your night, a rant or something that made you laugh)</div>
+          <textarea id="message" placeholder="The lamb was..." maxlength="500"></textarea>
+          <div class="name-row">
+            <label>from</label>
+            <input id="guestName" type="text" placeholder="your name (optional)" maxlength="40">
+          </div>
+        </div>
+        <div class="back-right">
+          <div class="stamp"><div class="stamp-perf"></div><span id="stampCountry">COLOMBIA</span></div>
+          <div class="postmark"><span>NEW PLATE<br>CLUB<br>&middot; POST &middot;</span></div>
+          <div class="addr-block">
+            <div class="to-label">to</div>
+            <div class="club">New Plate Club</div>
+            <div id="eventLine">Dinner No. 2</div>
+            <div id="eventDate"></div>
+          </div>
+        </div>
+      </div>
+      <div class="send-row">
+        <span class="flip-hint">tap card for photo side</span>
+        <button class="send" id="sendBtn">send it</button>
+      </div>
+    </div>
+
+    <div class="face face-back">
+      <div class="front-photo" id="frontPhoto">
+        <div class="upload-zone" id="uploadZone">
+          <div class="icon">✦</div>
+          <p>a photo from your night at<br>New Plate Club (optional)</p>
+          <label class="upload-btn" for="photoInput">choose photo</label>
+        </div>
+        <input type="file" id="photoInput" accept="image/*">
+        <div class="wordmark-badge">New Plate Club</div>
+      </div>
+      <div class="front-footer">wish you were here? <b>you were.</b> tell us about it →</div>
+      <div class="send-row">
+        <span class="flip-hint">tap card for message side</span>
+        <button class="send" id="sendBtn2">send it</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tap-flag" id="tapFlag">slide 1</div>
+</div>
+
+<div class="stage" id="deliveredStage" style="display:none;">
+  <div class="delivered show">
+    <div class="stamp-mark">sent</div>
+    <h2>Delivered.</h2>
+    <p>Thanks for the postcard — it just landed<br>on the New Plate Club table.</p>
+  </div>
+</div>
+
+<script>
+  // ================================================================
+  //  MONTHLY SETUP — edit just this block before each dinner, then
+  //  re-upload/replace the file. Nothing below this needs to change.
+  // ================================================================
+  const EVENT_LINE   = "Dinner No. 2";        // e.g. "Dinner No. 3"
+  const EVENT_DATE   = "Sept 2026";           // e.g. "Oct 2026"
+
+  // Paste your Formspree endpoint here once you've created a form at
+  // formspree.io — it looks like "https://formspree.io/f/xxxxxxxx"
+  const FORM_ENDPOINT = "https://formspree.io/f/xdeknowy";
+
+  // Stamp reflects the cuisine/country of the month.
+  // STAMP_COLORS = [top color, middle color, bottom color] as hex.
+  const STAMP_COUNTRY = "COLOMBIA";
+  const STAMP_COLORS  = ["#FCD116", "#003893", "#CE1126"];
+  // A few ready-made examples to copy in:
+  //   Italy:   STAMP_COUNTRY "ITALIA"  STAMP_COLORS ["#009246","#F1F2F1","#CE2B37"]
+  //   Japan:   STAMP_COUNTRY "NIPPON"  STAMP_COLORS ["#FFFFFF","#FFFFFF","#BC002D"]
+  //   Mexico:  STAMP_COUNTRY "MÉXICO"  STAMP_COLORS ["#006847","#FFFFFF","#CE1126"]
+  //   France:  STAMP_COUNTRY "FRANCE"  STAMP_COLORS ["#0055A4","#FFFFFF","#EF4135"]
+  // ================================================================
+
+  document.getElementById('eventLine').textContent = EVENT_LINE;
+  document.getElementById('eventDate').textContent = EVENT_DATE;
+  document.getElementById('stampCountry').textContent = STAMP_COUNTRY;
+  document.documentElement.style.setProperty('--stamp-1', STAMP_COLORS[0]);
+  document.documentElement.style.setProperty('--stamp-2', STAMP_COLORS[1]);
+  document.documentElement.style.setProperty('--stamp-3', STAMP_COLORS[2]);
+
+  const card = document.getElementById('card');
+  const tapFlag = document.getElementById('tapFlag');
+  const guestLabel = document.getElementById('guestLabel');
+  const guestStage = document.getElementById('guestStage');
+  const deliveredStage = document.getElementById('deliveredStage');
+  const sendBtn = document.getElementById('sendBtn');
+  const sendBtn2 = document.getElementById('sendBtn2');
+
+  card.addEventListener('click', (e) => {
+    const tag = e.target.tagName;
+    if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'BUTTON' || tag === 'LABEL') return;
+    card.classList.toggle('flipped');
+    const flipped = card.classList.contains('flipped');
+    tapFlag.textContent = flipped ? 'slide 2' : 'slide 1';
+    guestLabel.textContent = flipped ? 'add a photo, or tap to go back' : 'write your postcard below, then tap for a photo';
+  });
+
+  // ---- PHOTO UPLOAD ----
+  let photoDataUrl = null;
+  let photoBlob = null;
+  const photoInput = document.getElementById('photoInput');
+  const frontPhoto = document.getElementById('frontPhoto');
+  const uploadZone = document.getElementById('uploadZone');
+
+  photoInput.addEventListener('click', (e) => e.stopPropagation());
+  photoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        // downscale so uploads stay small and fast
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        canvas.toBlob((blob) => { photoBlob = blob; }, 'image/jpeg', 0.7);
+        renderPhoto();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function renderPhoto() {
+    uploadZone.style.display = 'none';
+    let imgEl = frontPhoto.querySelector('img');
+    if (!imgEl) {
+      imgEl = document.createElement('img');
+      frontPhoto.insertBefore(imgEl, frontPhoto.firstChild);
+    }
+    imgEl.src = photoDataUrl;
+    let removeBtn = frontPhoto.querySelector('.remove-photo');
+    if (!removeBtn) {
+      removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-photo';
+      removeBtn.textContent = 'remove';
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        photoDataUrl = null;
+        photoBlob = null;
+        imgEl.remove();
+        removeBtn.remove();
+        uploadZone.style.display = 'block';
+        photoInput.value = '';
+      });
+      frontPhoto.appendChild(removeBtn);
+    }
+  }
+
+  // ---- SEND ----
+  async function sendPostcard(e) {
+    e.stopPropagation();
+    const message = document.getElementById('message').value.trim();
+    const name = document.getElementById('guestName').value.trim();
+    if (!message) {
+      card.classList.remove('flipped');
+      tapFlag.textContent = 'slide 1';
+      document.getElementById('message').focus();
+      return;
+    }
+    if (FORM_ENDPOINT.includes('YOUR_FORM_ID')) {
+      alert('Almost there — paste your Formspree endpoint into FORM_ENDPOINT near the top of the script first.');
+      return;
+    }
+    sendBtn.disabled = true;
+    sendBtn2.disabled = true;
+    sendBtn.textContent = 'sending...';
+    sendBtn2.textContent = 'sending...';
+
+    const formData = new FormData();
+    formData.append('name', name || 'anonymous');
+    formData.append('message', message);
+    formData.append('event', EVENT_LINE);
+    if (photoBlob) formData.append('photo', photoBlob, 'postcard-photo.jpg');
+
+    try {
+      const res = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!res.ok) throw new Error('Form submission failed');
+      guestStage.style.display = 'none';
+      deliveredStage.style.display = 'block';
+    } catch (err) {
+      sendBtn.disabled = false;
+      sendBtn2.disabled = false;
+      sendBtn.textContent = 'send it';
+      sendBtn2.textContent = 'send it';
+      alert('Could not send — check your connection and try again.');
+      console.error(err);
+    }
+  }
+  sendBtn.addEventListener('click', sendPostcard);
+  sendBtn2.addEventListener('click', sendPostcard);
+</script>
+
+</body>
+</html>
